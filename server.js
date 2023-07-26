@@ -7,7 +7,7 @@ import cors from 'cors'
 import authRoute from './routes/authRoute.js'
 import categoryRoutes from './routes/categoryRoutes.js'
 import productRoute from './routes/productRoute.js'
-
+import userRouter from './routes/user.js'
  
 //configure env variables
 dotenv.config()
@@ -34,6 +34,7 @@ app.use(morgan('dev'))
 app.use('/api/auth', authRoute)
 app.use('/api/category', categoryRoutes)
 app.use('/api/product', productRoute)
+app.use('/api/user', userRouter)
 
 
 

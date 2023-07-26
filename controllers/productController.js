@@ -4,7 +4,7 @@ import fs from "fs";
 
 export const createProductController = async (req, res) => {
   try {
-    const { name, price, description, category, quantity, shipping } =
+    const { name, price, description, details, category, quantity, shipping } =
       req.fields;
     const { photo } = req.files;
      
@@ -21,16 +21,17 @@ export const createProductController = async (req, res) => {
       slug: slugify(name),
       price: price,
       description: description,
+      details:details,
       category: category,
       quantity: quantity,
       shipping: shipping,
       
     });
     if (photo) {
-      if (photo.size > 1000000) {
+      if (photo.size > 1500000) {
         return res.status(200).send({
-          success: true,
-          message: "Image size too large",
+          success: false,
+          message: "Image should be less than 1.5mb",
         });        
     }
     newProduct.photo.data = fs.readFileSync(photo.path);
@@ -88,9 +89,9 @@ export const deleteProductController = async (req, res) => {
 
 export const updateProductController = async (req, res) => {
   try {
-    const { name, price, description, category, quantity, shipping } =
+    const { name, price, description,details, category, quantity, shipping } =
       req.fields;
-    // const { photo } = req.files;
+    const { photo } = req.files;
 
     const product = await productModel.findOne({ _id: req.params.id });
     if (product) {
@@ -101,6 +102,7 @@ export const updateProductController = async (req, res) => {
           slug: slugify(name),
           price: price,
           description: description, 
+          details: details,
           category: category,
           quantity: quantity,
           shipping: shipping,
@@ -138,7 +140,7 @@ export const updateProductController = async (req, res) => {
 
 export const getProductsController = async (req, res) => {
   try {
-    const products = await productModel.find({}).select("-photo").limit(10).sort({createdAt:-1}).populate("category");
+    const products = await productModel.find({}).select("-photo").limit(10).sort({createdAt:-1})
     if (products) {
       res.status(200).send({
         success: true,
@@ -219,5 +221,38 @@ export const getProductPhotoController = async (req, res) => {
       message: "Internal server error",
     });
 
+  }
+}
+
+export const  getProductsByCategoryController = async (req, res) => {
+  
+
+  try {
+
+    const products = await productModel.find({ category: req.params.id }).select("-photo").sort({createdAt:-1})
+    if (products) {
+      res.status(200).send({
+        success: true,
+        totalProducts: products.length,
+        message: "Products fetched successfully",
+        products,
+        
+      });
+    }
+    else {
+      return res.status(200).send({
+        success: false,
+        message: "No products found",
+      });
+    }
+
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      error,
+      message: "Internal server error",
+    });
   }
 }

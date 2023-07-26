@@ -1,13 +1,13 @@
 import express from 'express';
 const router = express.Router();
 import { requireSignIn, adminMiddleware } from '../middlewares/authMiddleware.js';
-import { createCategoryController ,updateCategoryController,getAllCategoriesController,getSingleCategoryController,deleteCategoryController} from '../controllers/categoryController.js';
+import { createCategoryController ,updateCategoryController,getAllCategoriesController,getSingleCategoryController,deleteCategoryController,getCategoryPhotoController} from '../controllers/categoryController.js';
+import formidable from "express-formidable"
 
-
-router.post('/create', requireSignIn, adminMiddleware, createCategoryController);
+router.post('/create', requireSignIn, adminMiddleware,formidable(), createCategoryController);
 
 // update category
-router.put('/update/:id', requireSignIn, adminMiddleware, updateCategoryController);
+router.put('/update/:id', requireSignIn, adminMiddleware,formidable(), updateCategoryController);
 
 // get all categories
 router.get('/getall',  getAllCategoriesController)
@@ -17,10 +17,20 @@ router.get('/getall',  getAllCategoriesController)
 
 router.get('/get/:slug',  getSingleCategoryController) 
 
+//get category name
+
+ 
+
 // delete category
 
 
+
+
 router.delete('/delete/:id', requireSignIn, adminMiddleware, deleteCategoryController);
+
+//category photo
+
+router.get('/category-photo/:id',  getCategoryPhotoController)
 
 
 export default router;
