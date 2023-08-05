@@ -5,7 +5,7 @@ import userModel from "../models/userModel.js";
 export const getAllUsers = async (req, res) => {
   try {
 
-    const users = await userModel.find({}).select("-password");
+    const users = await userModel.find({role:0}).select("-password");
 
     if (users) {
       res.status(200).send({

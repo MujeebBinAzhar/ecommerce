@@ -190,3 +190,35 @@ export const getCategoryPhotoController = async (req, res) => {
     });
   }
 };
+
+
+export const getCategoryNameController = async (req, res) => {
+  try {
+       const id=req.params.id;
+
+       const name = await categoryModel.findOne({ _id: id }).select('name');
+       console.log("name",name);
+        if (name) {
+          res.status(200).send({
+            success: true,
+            message: "Category fetched successfully",
+            data:name
+          });
+        }
+        else {
+          return res.status(200).send({
+            success: true,
+            message: "No category found",
+          });
+        }
+    
+  } catch (error) {    
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      error,
+      message: "Internal server error",
+    });
+
+  }
+}
