@@ -1,21 +1,20 @@
-import categoryModel from "../models/categoryModel.js";
+import sportModel from "../models/sportsModel.js";
 import slugify from "slugify";
 import fs from "fs";
-import productModel from "../models/productModel.js";
 
-export const createCategoryController = async (req, res) => {
+export const createSportController = async (req, res) => {
   try {
     const { name } = req.fields;
     const { photo } = req.files;
-    const category = await categoryModel.findOne({ name });
-    if (category) {
+    const sport = await sportModel.findOne({ name });
+    if (sport) {
       return res.status(200).send({
         success: true,
-        message: "Category already exists",
+        message: "Sport already exists",
       });
     }
 
-    const newCategory = new categoryModel({
+    const newSport = new sportModel({
       name: name,
       slug: slugify(name),
     });
@@ -27,14 +26,14 @@ export const createCategoryController = async (req, res) => {
           message: "Image size too large",
         });
       }
-      newCategory.photo.data = fs.readFileSync(photo.path);
-      newCategory.photo.contentType = photo.type;
+      newSport.photo.data = fs.readFileSync(photo.path);
+      newSport.photo.contentType = photo.type;
     }
-    await newCategory.save();
+    await newSport.save();
     res.status(200).send({
       success: true,
-      message: "Category created successfully",
-      newCategory,
+      message: "Sport created successfully",
+      newSport,
     });
   } catch (error) {
     console.log(error);
@@ -46,42 +45,43 @@ export const createCategoryController = async (req, res) => {
   }
 };
 
-export const updateCategoryController = async (req, res) => {
+export const updateSportController = async (req, res) => {
   try {
     const { name } = req.fields;
     const { photo } = req.files;
 
-    const category = await categoryModel.findOne({ _id: req.params.id });
+    const sport = await sportModel.findOne({ _id: req.params.id });
 
-    if (category) {
-      const updatedCategory = await categoryModel.findOneAndUpdate(
+    if (sport) {
+      const updatedSport = await sportModel.findOneAndUpdate(
         { _id: req.params.id },
         { name: name, slug: slugify(name) },
         { new: true }
-
       );
+
       if (photo) {
         if (photo.size > 1000000) {
           return res.status(200).send({
-            success: true,
+            success: false,
             message: "Image size too large",
           });
         }
-        updatedCategory.photo.data = fs.readFileSync(photo.path);
-        updatedCategory.photo.contentType = photo.type;
 
-         res.status(200).send({
-          success: true,
-          message: "Category updated successfully",
-          updatedCategory,
-        });
+        updatedSport.photo.data = fs.readFileSync(photo.path);
+        updatedSport.photo.contentType = photo.type;
       }
 
-      await updatedCategory.save();
-    } else {
+      await updatedSport.save();
+
       return res.status(200).send({
         success: true,
-        message: "Category not found",
+        message: "Sport updated successfully",
+        updatedSport,
+      });
+    } else {
+      return res.status(404).send({
+        success: false,
+        message: "Sport not found",
       });
     }
   } catch (error) {
@@ -94,19 +94,19 @@ export const updateCategoryController = async (req, res) => {
   }
 };
 
-export const getAllCategoriesController = async (req, res) => {
+export const getAllSportsController = async (req, res) => {
   try {
-    const categories = await categoryModel.find({});
-    if (categories) {
+    const sports = await sportModel.find({});
+    if (sports) {
       res.status(200).send({
         success: true,
-        message: "Categories fetched successfully",
-        categories,
+        message: "Sports fetched successfully",
+        sports,
       });
     } else {
       return res.status(200).send({
         success: true,
-        message: "No categories found",
+        message: "No sports found",
       });
     }
   } catch (error) {
@@ -119,19 +119,19 @@ export const getAllCategoriesController = async (req, res) => {
   }
 };
 
-export const getSingleCategoryController = async (req, res) => {
+export const getSingleSportController = async (req, res) => {
   try {
-    const category = await categoryModel.findOne({ slug: req.params.slug });
-    if (category) {
+    const sport = await sportModel.findOne({ slug: req.params.slug });
+    if (sport) {
       res.status(200).send({
         success: true,
-        message: "Category fetched successfully",
-        category,
+        message: "Sport fetched successfully",
+        sport,
       });
     } else {
       return res.status(200).send({
         success: true,
-        message: "No category found",
+        message: "No sport found",
       });
     }
   } catch (error) {
@@ -145,29 +145,30 @@ export const getSingleCategoryController = async (req, res) => {
 };
 
  
-export const deleteCategoryController = async (req, res) => {
+export const deleteSportController = async (req, res) => {
   try {
-    
+    const sport = await sportModel.findOne({ _id: req.params.id });
 
-    const category = await categoryModel.findOne({ _id: req.params.id });
-    const productsInCategory = await productModel.find({ category: req.params.id });
 
-    if( productsInCategory.length > 0){
+    const productsInSport = await productModel.find({ sport: req.params.id });
+
+    if( productsInSport.length > 0){
       return res.status(200).send({
         success: true,
-        message: "Category cannot be deleted as it contains products",
+        message: "Sport cannot be deleted as it contains products",
       });
     }
-     if (category) {
-      await categoryModel.findOneAndDelete({ _id: req.params.id });
+
+    if (sport) {
+      await sportModel.findOneAndDelete({ _id: req.params.id });
       res.status(200).send({
         success: true,
-        message: "Category deleted successfully",
+        message: "sport deleted successfully",
       });
     } else {
       return res.status(200).send({
         success: true,
-        message: "Category not found",
+        message: "Sport not found",
       });
     }
   } catch (error) {
@@ -180,16 +181,16 @@ export const deleteCategoryController = async (req, res) => {
   }
 };
 
-export const getCategoryPhotoController = async (req, res) => {
+export const getSportPhotoController = async (req, res) => {
   try {
-    const category = await categoryModel.findOne({ _id: req.params.id });
-    if (category) {
-      res.set("Content-Type", category.photo.contentType);
-      return res.status(200).send(category.photo.data);
+    const sport = await sportModel.findOne({ _id: req.params.id });
+    if (sport) {
+      res.set("Content-Type", sport.photo.contentType);
+      return res.status(200).send(sport.photo.data);
     } else {
       return res.status(200).send({
         success: true,
-        message: "Category not found",
+        message: "Sport not found",
       });
     }
   } catch (error) {
@@ -203,23 +204,23 @@ export const getCategoryPhotoController = async (req, res) => {
 };
 
 
-export const getCategoryNameController = async (req, res) => {
+export const getSportNameController = async (req, res) => {
   try {
        const id=req.params.id;
 
-       const name = await categoryModel.findOne({ _id: id }).select('name');
+       const name = await sportModel.findOne({ _id: id }).select('name');
        console.log("name",name);
         if (name) {
           res.status(200).send({
             success: true,
-            message: "Category fetched successfully",
+            message: "sport fetched successfully",
             data:name
           });
         }
         else {
           return res.status(200).send({
             success: true,
-            message: "No category found",
+            message: "No sport found",
           });
         }
     
