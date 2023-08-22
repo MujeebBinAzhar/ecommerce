@@ -11,7 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const createProductController = async (req, res) => {
-   
   try {
     const {
       name,
@@ -19,13 +18,18 @@ export const createProductController = async (req, res) => {
       description,
       details,
       category,
-      quantity,
+      discount,
       shipping,
       sport,
       brand,
+      popular,
+      isnew,
+      trending,
     } = req.fields;
     const { photo } = req.files;
     const { photos } = req.files;
+
+    const features = JSON.parse(req.fields.features);
 
     const product = await productModel.findOne({ name, category });
 
@@ -43,11 +47,17 @@ export const createProductController = async (req, res) => {
       description: description,
       details: details,
       category: category,
-      quantity: quantity,
+      discount: discount,
       shipping: shipping,
       sport: sport,
       brand: brand,
+      features: features,
+      popular: popular,
+      isnew: isnew,
+      trending: trending,
     });
+
+    console.log("isnew", isnew  , "trending", trending)
 
     if (photo) {
       if (photo.size > 1500000) {
@@ -114,7 +124,6 @@ export const createProductController = async (req, res) => {
   }
 };
 
-
 export const updateProductController = async (req, res) => {
   try {
     const {
@@ -123,25 +132,24 @@ export const updateProductController = async (req, res) => {
       description,
       details,
       category,
-      quantity,
+      discount,
       shipping,
       sport,
       brand,
+      popular,
+      isnew,
+      trending,
     } = req.fields;
+   
 
-
-    const { photo,morephotos } = req.files;
+    const { photo, morephotos } = req.files;
     const photos = JSON.parse(req.fields.photos);
- 
-     
 
- 
- 
+    const features = JSON.parse(req.fields.features);
 
     const product = await productModel.findOne({ _id: req.params.id });
 
     if (product) {
-
       const updatedProduct = await productModel.findOneAndUpdate(
         { _id: req.params.id },
         {
@@ -151,11 +159,15 @@ export const updateProductController = async (req, res) => {
           description: description,
           details: details,
           category: category,
-          quantity: quantity,
+          discount: discount,
           shipping: shipping,
           sport: sport,
           brand: brand,
           photos: photos,
+          features: features,
+          popular: popular,
+          isnew: isnew,
+          trending: trending,
         },
         { new: true }
       );
@@ -173,7 +185,7 @@ export const updateProductController = async (req, res) => {
 
       if (morephotos && Array.isArray(morephotos)) {
         const arrayOfPhotoPaths = [];
-  
+
         morephotos?.forEach((photo) => {
           if (photo.size > 1500000) {
             return res.status(200).json({
@@ -181,20 +193,20 @@ export const updateProductController = async (req, res) => {
               message: "Additional photo size too large",
             });
           }
-  
+
           const fileExtension = photo.name.split(".").pop();
           const randomFilename = `${crypto
             .randomBytes(8)
             .toString("hex")}_${Date.now()}.${fileExtension}`;
-  
+
           const additionalPhotoPath = path.join(
             __dirname,
             "../uploads/additionalPhotos",
             randomFilename
           );
-  
+
           console.log("additionalPhotoPath", additionalPhotoPath);
-  
+
           try {
             fs.promises.copyFile(photo.path, additionalPhotoPath);
             arrayOfPhotoPaths.push(randomFilename);
@@ -208,7 +220,7 @@ export const updateProductController = async (req, res) => {
           }
         });
       }
- 
+
       await updatedProduct.save();
       res.status(200).send({
         success: true,
@@ -225,7 +237,6 @@ export const updateProductController = async (req, res) => {
     });
   }
 };
-
 
 export const deleteProductController = async (req, res) => {
   try {
@@ -251,7 +262,6 @@ export const deleteProductController = async (req, res) => {
     });
   }
 };
-
 
 export const getProductsController = async (req, res) => {
   try {
@@ -333,7 +343,7 @@ export const getProductPhotoController = async (req, res) => {
       success: false,
       error,
       message: "Internal server error",
-    }); 
+    });
   }
 };
 
@@ -342,12 +352,13 @@ export const getProductAllPhotoController = async (req, res) => {
     const product = await productModel
       .findOne({ _id: req.params.id })
       .select("photos");
-      console.log("product", product);
-    if (product.photos.length > 0) {        
+    console.log("product", product);
+    if (product.photos.length > 0) {
       return res.status(200).send({
         success: true,
         message: "Product photos fetched successfully",
-        productPhotos: product.photos});
+        productPhotos: product.photos,
+      });
     } else {
       return res.status(200).send({
         success: false,
@@ -362,7 +373,7 @@ export const getProductAllPhotoController = async (req, res) => {
       message: "Internal server error",
     });
   }
-}
+};
 
 export const getProductsByCategoryController = async (req, res) => {
   try {
