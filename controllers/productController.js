@@ -31,6 +31,11 @@ export const createProductController = async (req, res) => {
 
     const features = JSON.parse(req.fields.features);
 
+    // get vairiants array too
+    const variants = JSON.parse(req.fields.variants);
+
+    console.log("variants", variants  )
+
     const product = await productModel.findOne({ name, category });
 
     if (product) {
@@ -55,9 +60,10 @@ export const createProductController = async (req, res) => {
       popular: popular,
       isnew: isnew,
       trending: trending,
+      variants: variants,
     });
 
-    console.log("isnew", isnew  , "trending", trending)
+   
 
     if (photo) {
       if (photo.size > 1500000) {
@@ -147,6 +153,8 @@ export const updateProductController = async (req, res) => {
 
     const features = JSON.parse(req.fields.features);
 
+    const variants = JSON.parse(req.fields.variants);
+
     const product = await productModel.findOne({ _id: req.params.id });
 
     if (product) {
@@ -168,6 +176,7 @@ export const updateProductController = async (req, res) => {
           popular: popular,
           isnew: isnew,
           trending: trending,
+          variants: variants,
         },
         { new: true }
       );

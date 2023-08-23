@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+
+const variantSchema = new mongoose.Schema({
+  name: mongoose.Schema.Types.Mixed, // Allow mixed data type (string or number)
+  quantity: Number, // Numeric quantity
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -64,27 +70,12 @@ const productSchema = new mongoose.Schema(
       required: false,
     },
 
-    // variant: [
-    //   {
-    //     name: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     attributes: [
-    //       {
-    //         name: {
-    //           type: String,
-    //           required: false,
-    //         },
-    //       },
-    //     ],
-    //     quantity: {
-    //       type: Number,
-    //       default: 0,
-    //       required: false,
-    //     },
-    //   },
-    // ],
+    variants: [
+      {
+        name: mongoose.Schema.Types.Mixed,  
+        attributes: [variantSchema],  
+      },
+    ],
 
     discount: {
       type: Number,
